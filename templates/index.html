@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Manager</title>
+    <link rel="stylesheet" href="/static/styles2.css">
+</head>
+<body>
+    <!-- Displaying the username -->
+    <div class="user">
+        <h1>Welcome, {{ username }}!</h1> 
+        <!-- Logout button -->
+        <form action="{{ url_for('logout') }}" method="POST">
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+
+    <!-- Buttons for adding and viewing passwords -->
+    <div class="function">
+        <a href="{{ url_for('add_password') }}">
+            <button>Add Password</button>
+        </a>
+        <a href="{{ url_for('view_password') }}" >
+            <button>View Passwords</button>
+        </a>
+    </div>
+    {% if mode == 'Add' %}
+        <div class="form-box">
+            <h2>Add Credentials</h2>
+            <form method="POST" >
+                <div class="input-group">
+                    <label for="user">User ID</label>
+                    <input type="text" id="user" name="user" placeholder="User ID" required aria-required="true">
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Password" required aria-required="true">
+                </div>
+                <button type="submit" class="primary-btn">Add Credentials</button>
+            </form>
+        </div>
+        {% if get_flashed_messages() %}
+            <h3>{{ get_flashed_messages() | join(" ") }}</h3>
+        {% endif %}
+    {% endif %}
+    {% if mode == 'View' %}
+        <div class="result-box">
+            <h2>Credentials</h2>
+            <table>
+                <thead>
+                    <th>S.No.</th>
+                    <th>User ID</th>
+                    <th>Password</th>
+                </thead>
+                <tbody>
+                    
+                    {% for credential in credentials %}
+                    <tr>
+                        <td>{{ credential['id'] }}</td>
+                        <td>{{ credential['userid'] }}</td>
+                        <td>{{ credential['password'] }}</td>
+                    </tr>
+                    {% endfor %}
+                
+                </tbody>
+            </table>
+        </div>
+        {% if get_flashed_messages() %}
+            <h3>{{ get_flashed_messages() | join(" ") }}</h3>
+        {% endif %}
+    {% endif %}
+</body>
+</html>

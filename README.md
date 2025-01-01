@@ -22,8 +22,7 @@ expense_tracker/
 │   ├── db_manager.py        # Handles database connections and queries
 │   ├── expense_manager.py   # CRUD operations for expenses
 │   └── report_generator.py  # Generates reports and visualizations
-├── tests/
-│   └── test_cases.py        # Test cases for the application
+├── test.py        # Test cases for the application
 ├── README.md                # Documentation
 ├── requirements.txt         # Python dependencies
 └── .gitignore               # Files ignored by Git
@@ -56,7 +55,7 @@ expense_tracker/
 
 ## Usage
 
-- Run the application using `python main.py`.
+- Run the application using `python app.py`.
 - Follow the on-screen menu to perform actions:
   - Add an expense.
   - View all expenses.
