@@ -10,7 +10,7 @@ init_users_db()
 # Flask app configuration
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # Use environment variables for production
-app.permanent_session_lifetime = timedelta(minutes=30)
+app.permanent_session_lifetime = timedelta(minutes=3)
 
 # Flask-Login setup
 login_manager = LoginManager()
