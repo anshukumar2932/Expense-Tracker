@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from modules.db_manager import init_users_db, get_user_by_userid, create_user, update_password,enter_expense,show_expense
+from datetime import timedelta
 
 # Initialize database
 init_users_db()
@@ -9,6 +10,7 @@ init_users_db()
 # Flask app configuration
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # Use environment variables for production
+app.permanent_session_lifetime = timedelta(minutes=30)
 
 # Flask-Login setup
 login_manager = LoginManager()
@@ -17,7 +19,6 @@ login_manager.login_view = 'login'
 
 # Temporary state for password reset
 reset_session = {}
-
 
 # User class for Flask-Login
 class User(UserMixin):
@@ -42,6 +43,8 @@ def redirect_authenticated_user():
 @app.route('/')
 def home():
     """Redirect to login or protected page based on authentication status."""
+    logout_user()  # Logs out the user
+    session.clear()
     if current_user.is_authenticated:
         return redirect(url_for('protected', username=current_user.id))
     return redirect(url_for('login'))
@@ -136,19 +139,26 @@ def add_expense():
         Category = request.form.get('Category')
         Particular = request.form.get('Particular')
         Amount = request.form.get('Amount')
-        print(Date,Category,Particular,Amount)
-        if current_user.id==current_user.id:
-            if enter_expense(current_user.id, Date, Category, Particular, Amount):
-                flash("Successfully added data")
+
+        try:
+            if request.form.get('username') == current_user.id:
+                if enter_expense(current_user.id, Date, Category, Particular, Amount):
+                    flash("Successfully added data")
+                else:
+                    flash("An error occurred adding expense.") 
             else:
-                flash("An error occurred.")
+                flash("Invalid Username")
+        except Exception as e:
+            # Log the error for debugging
+            app.logger.error(f"Error adding expense: {e}") 
+            flash("An unexpected error occurred. Please try again later.") 
+
     return render_template('index.html', username=current_user.id, mode="Add")
 
 @app.route("/view_expense")
 @login_required
 def view_expense():
     return render_template('index.html', username=current_user.id, mode="View",credentials=show_expense(current_user.id))
-
 
 if __name__ == "__main__":
     app.run(debug=True)
