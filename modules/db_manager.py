@@ -83,13 +83,14 @@ def enter_expense(username, Date, Category, Particular, Amount):
             ''', (Date, Category, Particular, Amount))
             conn.commit()
             print(f"Expense added successfully for {username}.")
+            return True
     except Exception as e:
         message = f"Error adding expense for {username}: {e}"
         print(message)
         return message
 
 def show_expense(username):
-    """Fetch and print all rows for a user's expenses."""
+    """Fetch all rows for a user's expenses."""
     try:
         with get_db() as conn:
             table = f"expenses_{username}"  # Fixed table name
@@ -97,11 +98,18 @@ def show_expense(username):
                 SELECT * FROM {table}
             ''')
             rows = cursor.fetchall()
+            
+            # Check if rows exist
             if rows:
-                for row in rows:
-                    print(dict(row))
+                return [dict(row) for row in rows]  # Return a list of dictionaries
             else:
                 print(f"No expenses found for {username}.")
+                return []  # Return an empty list if no rows found
+    except Exception as e:
+        print(f"Error fetching expenses for {username}: {e}")
+        return []  # Return an empty list in case of an error
+
+            
     except Exception as e:
         message = f"Error in showing expense for {username}: {e}"
         print(message)
