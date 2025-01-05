@@ -7,86 +7,92 @@
     <link rel="stylesheet" href="/static/styles2.css">
 </head>
 <body>
-    <!-- Displaying the username -->
-    <div class="user">
-        <h1>Welcome, {{ username }}!</h1> 
-        <!-- Logout button -->
+    <!-- User Info Section -->
+    <section class="user-info">
+        <h1>Welcome, {{ username }}!</h1>
         <form action="{{ url_for('logout') }}" method="POST">
-            <button type="submit">Logout</button>
+            <button type="submit" class="logout-btn">Logout</button>
         </form>
-    </div>
+    </section>
 
-    <!-- Buttons for adding and viewing passwords -->
-    <div class="function">
-        <a href="{{ url_for('add_expense') }}">
-            <button>Add Expense</button>
+    <!-- Action Buttons Section -->
+    <section class="action-buttons">
+        <a href="{{ url_for('add_expense') }}" class="btn-link">
+            <button class="action-btn">Add Expense</button>
         </a>
-        <a href="{{ url_for('view_expense') }}" >
-            <button>View Expenses</button>
+        <a href="{{ url_for('view_expense') }}" class="btn-link">
+            <button class="action-btn">View Expenses</button>
         </a>
-    </div>
+        <a href="{{ url_for('view_expense') }}" class="btn-link">
+            <button class="action-btn">Delete Expenses</button>
+        </a>
+    </section>
+
     {% if mode == 'Add' %}
-        <div class="form-box">
-            <h2>Add Credentials</h2>
-            <form method="POST" >
-                <div class="input-group">
-                    <label for="Date">Date</label>
-                    <input type="date" id="Date" name="Date"  required aria-required="true">
-                </div>
-                <div class="input-group">
-                    <label for="Category">Category</label>
-                    <select id="Category" name="Category" required aria-required="true">
-                        <option value="School_fees">School fees</option>
-                        <option value="Stationery">Stationery</option>
-                        <option value="Recharge">Recharge</option>
-                        <option value="Food">Food</option>
-                        <option value="Miscellaneous">Miscellaneous</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label for="Particular">Particular</label>
-                    <input type="text" id="Particular" name="Particular" placeholder="Particular" required aria-required="true">
-                </div>
-                <div class="input-group">
-                    <label for="Amount">Amount</label>
-                    <input type="number" id="Amount" name="Amount" placeholder="Amount" required aria-required="true">
-                </div>
-                <button type="submit" class="primary-btn">Add Expense</button>
-            </form>
-        </div>
-        {% if get_flashed_messages() %}
-            <h3>{{ get_flashed_messages() | join(" ") }}</h3>
-        {% endif %}
+    <!-- Add Expense Form -->
+    <section class="form-container">
+        <h2>Add Expense</h2>
+        <form method="POST">
+            <div class="input-group">
+                <label for="Date">Date</label>
+                <input type="date" id="Date" name="Date" required>
+            </div>
+            <div class="input-group">
+                <label for="Category">Category</label>
+                <select id="Category" name="Category" required>
+                    <option value="School_fees">School fees</option>
+                    <option value="Stationery">Stationery</option>
+                    <option value="Recharge">Recharge</option>
+                    <option value="Food">Food</option>
+                    <option value="Miscellaneous">Miscellaneous</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="Particular">Particular</label>
+                <input type="text" id="Particular" name="Particular" required>
+            </div>
+            <div class="input-group">
+                <label for="Amount">Amount</label>
+                <input type="number" id="Amount" name="Amount" required>
+            </div>
+            <button type="submit" class="submit-btn">Add Expense</button>
+        </form>
+    </section>
+    {% if get_flashed_messages() %}
+        <h3 class="flash-message">{{ get_flashed_messages() | join(" ") }}</h3>
     {% endif %}
+    {% endif %}
+
     {% if mode == 'View' %}
-        <div class="result-box">
-            <h2>Expenses</h2>
-            <table>
-                <thead>
+    <!-- View Expenses -->
+    <section class="result-container">
+        <h2>Expenses List</h2>
+        <table class="expense-table">
+            <thead>
+                <tr>
                     <th>Sl no.</th>
                     <th>Date</th>
                     <th>Category</th>
                     <th>Particular</th>
                     <th>Amount</th>
-                </thead>
-                <tbody>
-                    
-                    {% for credential in credentials %}
-                    <tr>
-                        <td>{{ credential['id'] }}</td>
-                        <td>{{ credential['Date'] }}</td>
-                        <td>{{ credential['Category'] }}</td>
-                        <td>{{ credential['Particular'] }}</td>
-                        <td>{{ credential['Amount'] }}</td>
-                    </tr>
-                    {% endfor %}
-                
-                </tbody>
-            </table>
-        </div>
-        {% if get_flashed_messages() %}
-            <h3>{{ get_flashed_messages() | join(" ") }}</h3>
-        {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for credential in credentials %}
+                <tr>
+                    <td>{{ credential['id'] }}</td>
+                    <td>{{ credential['Date'] }}</td>
+                    <td>{{ credential['Category'] }}</td>
+                    <td>{{ credential['Particular'] }}</td>
+                    <td>Rs {{ credential['Amount'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    {% if get_flashed_messages() %}
+        <h3 class="flash-message">{{ get_flashed_messages() | join(" ") }}</h3>
+    {% endif %}
     {% endif %}
 </body>
 </html>
