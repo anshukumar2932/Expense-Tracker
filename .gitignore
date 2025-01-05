@@ -1,2 +1,3 @@
 
 *.db
+database/expense_tracker.db
