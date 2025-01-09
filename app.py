@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from modules.db_manager import init_users_db, get_user_by_userid, create_user, update_password,enter_expense,show_expense
+from modules.db_manager import *
 from datetime import timedelta
 
 # Initialize database
@@ -139,9 +139,8 @@ def add_expense():
         Category = request.form.get('Category')
         Particular = request.form.get('Particular')
         Amount = request.form.get('Amount')
-
         try:
-            if request.form.get('username') == current_user.id:
+            if current_user.id == current_user.id:
                 if enter_expense(current_user.id, Date, Category, Particular, Amount):
                     flash("Successfully added data")
                 else:
@@ -159,6 +158,33 @@ def add_expense():
 @login_required
 def view_expense():
     return render_template('index.html', username=current_user.id, mode="View",credentials=show_expense(current_user.id))
+
+@app.route("/protected/delete_expense", methods=['GET', 'POST'])
+@login_required
+def delete_expense():
+    if request.method == 'POST':
+        expense_ids = request.form.getlist('expense_ids[]')  # Retrieve multiple selected IDs
+        try:
+            # Loop through all selected expense IDs
+            for expense_id in expense_ids:
+                expense_id = int(expense_id)  # Ensure it is an integer
+                print((current_user.id, expense_id))
+                if not delete_user_expense(username=current_user.id, e_id=expense_id):  # Call utility function
+                    flash(f"An error occurred while deleting expense ID {expense_id}.")
+                else:
+                    flash(f"Expense ID {expense_id} deleted successfully.")
+        except Exception as e:
+            app.logger.error(f"Error deleting expense: {e}")
+            flash("An unexpected error occurred. Please try again later.")
+
+    # Re-render the delete page with updated data
+    return render_template(
+        'index.html', 
+        username=current_user.id, 
+        mode="delete", 
+        credentials=show_expense(current_user.id)
+    )
+
 
 if __name__ == "__main__":
     app.run(debug=True)

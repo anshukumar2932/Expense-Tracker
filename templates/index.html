@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Manager</title>
+    <title>Expense Manager</title>
     <link rel="stylesheet" href="/static/styles2.css">
 </head>
 <body>
-    <!-- User Info Section -->
     <section class="user-info">
         <h1>Welcome, {{ username }}!</h1>
         <form action="{{ url_for('logout') }}" method="POST">
@@ -15,7 +14,6 @@
         </form>
     </section>
 
-    <!-- Action Buttons Section -->
     <section class="action-buttons">
         <a href="{{ url_for('add_expense') }}" class="btn-link">
             <button class="action-btn">Add Expense</button>
@@ -23,13 +21,12 @@
         <a href="{{ url_for('view_expense') }}" class="btn-link">
             <button class="action-btn">View Expenses</button>
         </a>
-        <a href="{{ url_for('view_expense') }}" class="btn-link">
+        <a href="{{ url_for('delete_expense') }}" class="btn-link">
             <button class="action-btn">Delete or Update Expenses</button>
         </a>
     </section>
 
     {% if mode == 'Add' %}
-    <!-- Add Expense Form -->
     <section class="form-container">
         <h2>Add Expense</h2>
         <form method="POST">
@@ -57,24 +54,23 @@
             </div>
             <button type="submit" class="submit-btn">Add Expense</button>
         </form>
-    </section>
-    {% if get_flashed_messages() %}
+        {% if get_flashed_messages() %}
         <h3 class="flash-message">{{ get_flashed_messages() | join(" ") }}</h3>
-    {% endif %}
+        {% endif %}
+    </section>
     {% endif %}
 
     {% if mode == 'View' %}
-    <!-- View Expenses -->
     <section class="result-container">
         <h2>Expenses List</h2>
-        <table class="expense-table">
+        <table class="expense-table" id="expenseTable">
             <thead>
                 <tr>
-                    <th>Sl no.</th>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Particular</th>
-                    <th>Amount</th>
+                    <th scope="col" data-column="0" class="sortable">Sl no.</th>
+                    <th scope="col" data-column="1" class="sortable">Date</th>
+                    <th scope="col" data-column="2" class="sortable">Category</th>
+                    <th scope="col" data-column="3" class="sortable">Particular</th>
+                    <th scope="col" data-column="4" class="sortable">Amount</th>
                 </tr>
             </thead>
             <tbody>
@@ -84,15 +80,99 @@
                     <td>{{ credential['Date'] }}</td>
                     <td>{{ credential['Category'] }}</td>
                     <td>{{ credential['Particular'] }}</td>
-                    <td>Rs {{ credential['Amount'] }}</td>
+                    <td>{{ credential['Amount'] }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-    </section>
-    {% if get_flashed_messages() %}
+        {% if get_flashed_messages() %}
         <h3 class="flash-message">{{ get_flashed_messages() | join(" ") }}</h3>
+        {% endif %}
+    </section>
     {% endif %}
+
+    {%if mode=="delete"%} 
+    <section class="delete-container">
+        <h2>Expenses List</h2>
+        <form action="{{ url_for('delete_expense') }}" method="POST">
+            <table class="expense-table" id="expenseTable">
+                <thead>
+                    <tr>
+                        <th scope="col" data-column="0" class="sortable">Check Box</th>
+                        <th scope="col" data-column="1" class="sortable">Date</th>
+                        <th scope="col" data-column="2" class="sortable">Category</th>
+                        <th scope="col" data-column="3" class="sortable">Particular</th>
+                        <th scope="col" data-column="4" class="sortable">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for credential in credentials %}
+                    <tr>
+                        <td><input type="checkbox" id="expense_id" name="expense_ids[]" value="{{ credential.id }}"></td>
+                        <td>{{ credential['Date'] }}</td>
+                        <td>{{ credential['Category'] }}</td>
+                        <td>{{ credential['Particular'] }}</td>
+                        <td>{{ credential['Amount'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="submit-btn">Delete Selected</button>
+        </form>
+
+        {% if get_flashed_messages() %}
+        <h3 class="flash-message">{{ get_flashed_messages() | join(" ") }}</h3>
+        {% endif %}
+    </section>
     {% endif %}
+
+    <script>
+        // Function to sort table columns
+        function sortTable(tableId, columnIndex, isNumeric, isDate) {
+            const table = document.getElementById(tableId);
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.rows);
+
+            // Toggle sorting direction
+            const currentDirection = table.dataset.sortDirection || 'asc';
+            const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+            table.dataset.sortDirection = newDirection;
+
+            rows.sort((rowA, rowB) => {
+                const cellA = rowA.cells[columnIndex].innerText.trim();
+                const cellB = rowB.cells[columnIndex].innerText.trim();
+
+                if (isNumeric) {
+                    return newDirection === 'asc'
+                        ? parseFloat(cellA) - parseFloat(cellB)
+                        : parseFloat(cellB) - parseFloat(cellA);
+                } else if (isDate) {
+                    const dateA = new Date(cellA);
+                    const dateB = new Date(cellB);
+                    return newDirection === 'asc' ? dateA - dateB : dateB - dateA;
+                } else {
+                    return newDirection === 'asc'
+                        ? cellA.localeCompare(cellB)
+                        : cellB.localeCompare(cellA);
+                }
+            });
+
+            // Append sorted rows back to tbody
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // Attach click event listeners to table headers
+        document.addEventListener("DOMContentLoaded", () => {
+            const headers = document.querySelectorAll("#expenseTable .sortable");
+            headers.forEach(header => {
+                header.addEventListener("click", () => {
+                    const columnIndex = parseInt(header.dataset.column, 10);
+                    const isNumeric = columnIndex === 0 || columnIndex === 4; // Sl no. and Amount
+                    const isDate = columnIndex === 1; // Date
+                    sortTable("expenseTable", columnIndex, isNumeric, isDate);
+                });
+            });
+        });
+    </script>
 </body>
 </html>

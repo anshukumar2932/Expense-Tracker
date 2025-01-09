@@ -115,19 +115,20 @@ def show_expense(username):
         print(message)
         return message
 
-def delete_expense(username):
+def delete_user_expense(username, e_id):
     """Delete an expense from a specific user's table."""
     try:
-        show_expense(username)
-        id = int(input("Enter the id to be selected"))
+        e_id = int(e_id)  # Ensure e_id is an integer
+        table_name = f"expenses_{username}"  # Dynamically set the table name
         with get_db() as conn:
-            table_name = f"expenses_{username}" 
             conn.execute(f'''
                 DELETE FROM {table_name} WHERE id = ?
-            ''', (id,))
+            ''', (e_id,))  # Pass the correct variable
             conn.commit()
-            print(f"Expense with ID {id} deleted successfully for {username}.")
+            print(f"Expense with ID {e_id} deleted successfully for {username}.")
+            return True
     except Exception as e:
         message = f"Error deleting expense for {username}: {e}"
         print(message)
-        return message
+        return False  # Return False instead of an error message string
+
